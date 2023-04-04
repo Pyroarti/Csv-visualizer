@@ -1,0 +1,11 @@
+To use this application, follow these steps:
+
+1. Click the "Browse files" button to select one or more CSV files to visualize (choose one at a time).
+
+2. Once you have selected your files, use the checkboxes to choose which components to visualize.
+
+3. Click the "Show graph" button to display the visualization.
+
+4. Use the date range picker and hour range slider to adjust the time period shown in the graph.
+
+5. Draw a window to look closer at the values and double click to go back.
