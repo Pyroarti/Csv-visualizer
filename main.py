@@ -177,7 +177,7 @@ class App(customtkinter.CTk):
 
 
         current_path = os.path.dirname(os.path.realpath(__file__))
-        self.bg_image = customtkinter.CTkImage(Image.open(current_path + "\\bg_gradient.jpg"),
+        self.bg_image = customtkinter.CTkImage(Image.open(current_path + "\\bg.jpg"),
                                                size=(400, 780))
         self.bg_image_label = customtkinter.CTkLabel(self, image=self.bg_image)
         self.bg_image_label.place(x=0, y=0, relwidth=1, relheight=1)
