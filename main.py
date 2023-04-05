@@ -1,5 +1,6 @@
 from tkinter import IntVar, filedialog, messagebox
 import threading
+import os
 from os import startfile
 import webbrowser
 
@@ -26,7 +27,9 @@ filenames = []
 
 def browseFiles(app_instance):
     global filename
-    filename = filedialog.askopenfilename(initialdir = "/",
+    initial_dir = os.getcwd()
+    
+    filename = filedialog.askopenfilename(initialdir = initial_dir,
                                           title = "Select a File",
                                           filetypes = (("csv files",
                                                         "*.csv*"),
@@ -115,6 +118,7 @@ def create_dash_app(components_name, data, checked):
 
     def update_graph(start_date, end_date, hour_range):
         start_date = pd.to_datetime(start_date)
+        print(start_date)
         end_date = pd.to_datetime(end_date)
 
         start_time = start_date.replace(hour=hour_range[0])
