@@ -2,7 +2,9 @@ from tkinter import IntVar, filedialog, messagebox
 import threading
 import os
 from os import startfile
+import signal
 import webbrowser
+import time
 
 import customtkinter
 import dash
@@ -75,7 +77,7 @@ def create_dash_app(components_name, data, checked):
     fig = px.line(data, x="Time", y=components_name)
 
     app = dash.Dash(__name__)
-    webbrowser.open_new('http://127.0.0.1:8050/')
+    
 
 
     app.layout = html.Div([
@@ -132,13 +134,16 @@ def create_dash_app(components_name, data, checked):
 
         return fig
 
-    serve(app.server, host='127.0.0.1', port=8050)
+    #serve(app.server, host='127.0.0.1', port=8050)
+    dash_thread = threading.Thread(target=serve, args=(app.server,), kwargs={'host': '127.0.0.1', 'port': 8050, '_quiet': True})
+    dash_thread.daemon = True  # Set daemon to True to allow the app to exit when the main thread is closed
+    dash_thread.start()
+    webbrowser.open_new('http://127.0.0.1:8050/')
 
 
 def show_graph():
     if components_checked:
-        dash_thread = threading.Thread(target=create_dash_app, args=(components_name, data, components_checked))
-        dash_thread.start()
+        create_dash_app(components_name, data, components_checked)
     else:
         messagebox.showinfo("No component selected", "Please select atleast one component to plot.")
 
@@ -176,6 +181,7 @@ class App(customtkinter.CTk):
 
         self.resizable(False, False)
 
+
         self.bg_image = customtkinter.CTkImage(Image.open(BACKGROUND_IMAGE),
                                                size=(400, 780))
         self.bg_image_label = customtkinter.CTkLabel(self, image=self.bg_image)
@@ -199,7 +205,7 @@ class App(customtkinter.CTk):
         button_help = customtkinter.CTkButton(master=self.frame_1, command=self.open_toplevel, text="How to use")
         button_help.pack(pady=10, padx=10)
 
-        button_exit = customtkinter.CTkButton(master=self.frame_1, command=exit, text="Exit")
+        button_exit = customtkinter.CTkButton(master=self.frame_1, command=quit, text="Exit")
         button_exit.pack(pady=10, padx=10)
 
 
@@ -233,6 +239,15 @@ class App(customtkinter.CTk):
             self.toplevel_window.focus()
 
         self.toplevel_window.lift()
+
+    def quit(self):
+        if hasattr(self, "dash_app"):
+            self.dash_app.server.stop()  # Gracefully stop the Flask server
+            time.sleep(1)  # Give the server time to stop
+        
+        os.kill(os.getpid(), signal.SIGTERM)
+        
+        
 
 
 def main():
