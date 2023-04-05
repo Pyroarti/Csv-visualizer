@@ -78,6 +78,10 @@ def create_dash_app(components_name, data, checked):
 
     app = dash.Dash(__name__)
     
+    dcc.Graph(
+    id='line-graph',
+    style={'width': '100%', 'height': '150vh'}
+    )
 
 
     app.layout = html.Div([
@@ -98,7 +102,9 @@ def create_dash_app(components_name, data, checked):
             value=[0, 23],
             marks={i: f'{i}:00' for i in range(0, 24)}
         ),
-        dcc.Graph(id='line-graph')
+        dcc.Graph(id='line-graph',
+        style={'width': '100%', 'height': '85vh'}
+        )
     ])
 
 
