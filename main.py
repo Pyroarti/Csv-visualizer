@@ -17,7 +17,7 @@ import plotly.express as px
 from PIL import Image
 from waitress import serve
 
-# Sets the theme for the program
+# Sets the theme for the UI.
 customtkinter.set_appearance_mode("dark")
 customtkinter.set_default_color_theme("blue")
 
@@ -35,12 +35,10 @@ def browse_files(app_instance):
 
     initial_dir = os.getcwd()
 
-    filename = filedialog.askopenfilename(initialdir=initial_dir,
-                                          title="Select a File",
-                                          filetypes=(("csv files",
-                                                        "*.csv*"),
-                                                       ("all files",
-                                                        "*.*")))
+    filename = filedialog.askopenfilename(
+        initialdir=initial_dir,
+        title="Select a File",
+        filetypes=(("csv files", "*.csv*"), ("all files", "*.*")))
 
     if filename.endswith("csv"):
         filenames.append(filename)
@@ -198,6 +196,7 @@ class App(customtkinter.CTk):
 
         self.bg_image = customtkinter.CTkImage(Image.open(BACKGROUND_IMAGE),
                                                size=(400, 780))
+        
         self.bg_image_label = customtkinter.CTkLabel(self, image=self.bg_image)
         self.bg_image_label.place(x=0, y=0, relwidth=1, relheight=1)
 
