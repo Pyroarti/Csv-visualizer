@@ -30,18 +30,17 @@ filenames = []
 
 
 def browse_files(app_instance):
-    """It promts the user to select a csv file 
+    """It promts the user to select a csv file
     and adds the csv files to a list for handling and plotting multiple csv data."""
 
     initial_dir = os.getcwd()
 
-    filename = filedialog.askopenfilename(initialdir = initial_dir,
-                                          title = "Select a File",
-                                          filetypes = (("csv files",
+    filename = filedialog.askopenfilename(initialdir=initial_dir,
+                                          title="Select a File",
+                                          filetypes=(("csv files",
                                                         "*.csv*"),
                                                        ("all files",
                                                         "*.*")))
-
 
     if filename.endswith("csv"):
         filenames.append(filename)
@@ -53,15 +52,14 @@ def browse_files(app_instance):
     return filenames
 
 
-
 def after_file_selected(app_instance):
-    """Takes the csv data and makes them into dataframes 
+    """Takes the csv data and makes them into dataframes
     and adds the componentes to a list for the user to select what to plot."""
     global data
     global components_name
     dfs = []
 
-    for filename in filenames: # Makes possible to select multiple csv files
+    for filename in filenames:  # Makes possible to select multiple csv files
         dataframe = pd.read_csv(filename)
         dfs.append(dataframe)
     data = pd.concat(dfs, axis=0, ignore_index=True)
@@ -83,7 +81,7 @@ def create_dash_app(components_name, data, checked):
     """Makes the dash webserver and adds a calaneder and hour slider."""
 
     app = dash.Dash(__name__)
-    #Calender so the user can select what date to see the plottet data
+    # Calender so the user can select what date to see the plottet data
     app.layout = html.Div([
         dcc.DatePickerRange(
             id='date-range-picker',
@@ -94,7 +92,7 @@ def create_dash_app(components_name, data, checked):
             end_date=data['Time'].max().date(),
 
         ),
-        #Hour slider so the user can select the hour of the day to see the plottet data.
+        # Hour slider so the user can select the hour of the day to see the plottet data.
         html.Div(id='hour-range-slider-output'),
         dcc.RangeSlider(
             id='hour-range-slider',
@@ -105,15 +103,16 @@ def create_dash_app(components_name, data, checked):
             marks={i: f'{i}:00' for i in range(0, 24)}
         ),
         dcc.Graph(id='line-graph',
-        style={'width': '100%', 'height': '85vh'}
+            style={'width': '100%', 'height': '85vh'}
         )
     ])
-
 
     @app.callback(
     Output('hour-range-slider-output', 'children'),
     [Input('hour-range-slider', 'value')]
     )
+
+
     def update_output(value):
         return f'Selected hour range: {value[0]}:00 - {value[1]}:00'
 
@@ -142,8 +141,7 @@ def create_dash_app(components_name, data, checked):
 
         return fig
 
-
-    #Starts the webserver with waitress.
+    # Starts the webserver with waitress.
     dash_thread = threading.Thread(target=serve, args=(app.server,),
                                    kwargs={'host': '127.0.0.1', 'port': 8050, '_quiet': True})
     dash_thread.daemon = True
@@ -167,10 +165,10 @@ class ToplevelWindow(customtkinter.CTkToplevel):
         self.resizable(False, False)
         self.title("LMT csv visualizer")
 
-        with open(HELP_TEXT_FILE, "r",encoding="utf-8") as text_file:
+        with open(HELP_TEXT_FILE, "r", encoding="utf-8") as text_file:
             help_text = text_file.read()
 
-        self.label = customtkinter.CTkLabel(self, text=help_text,justify="left")
+        self.label = customtkinter.CTkLabel(self, text=help_text, justify="left")
         self.label.pack(padx=20, pady=20)
 
         self.button_show_graph = customtkinter.CTkButton(master=self,
@@ -256,7 +254,7 @@ class App(customtkinter.CTk):
             self.checkbox_vars.append(checkbox_var)
 
 
-    def on_checkbox_change(self,index):
+    def on_checkbox_change(self, index):
         """Makes a list for every checkbox that is crossed."""
         if self.checkbox_vars[index].get() == 1:
             components_checked.append(index)
@@ -270,7 +268,6 @@ class App(customtkinter.CTk):
             self.toplevel_window = ToplevelWindow(self)
         else:
             self.toplevel_window.focus()
-
         self.toplevel_window.lift()
 
 
@@ -279,7 +276,6 @@ class App(customtkinter.CTk):
         if hasattr(self, "dash_app"):
             self.dash_app.server.stop()  # Gracefully stop the Flask server
             time.sleep(1)
-
         os.kill(os.getpid(), signal.SIGTERM)
 
 
