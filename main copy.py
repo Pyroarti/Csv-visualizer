@@ -14,6 +14,8 @@ import pandas as pd
 import plotly.express as px
 from PIL import Image
 from waitress import serve
+import plotly.graph_objs as go
+
 
 # Sets the theme for the program
 customtkinter.set_appearance_mode("dark")
@@ -85,9 +87,9 @@ def create_dash_app(components_name, data, checked):
     app.layout = html.Div([
         dcc.DatePickerRange( # HTML for the calender so the user can select what date to see the plottet data
             id='date-range-picker',
-            min_date_allowed=data['Time'].min().date(),
-            max_date_allowed=data['Time'].max().date(),
-            initial_visible_month=data['Time'].min().date(),
+            min_date_allowed=data['Time'].min(),
+            max_date_allowed=data['Time'].max(),
+            initial_visible_month=data['Time'].min(),
             start_date=data['Time'].min().date(),
             end_date=data['Time'].max().date(),
                     
@@ -116,31 +118,37 @@ def create_dash_app(components_name, data, checked):
 
 
     @app.callback(
-    Output('line-graph', 'figure'),
+    Output('graph', 'figure'),
     [Input('date-range-picker', 'start_date'),
      Input('date-range-picker', 'end_date'),
      Input('hour-range-slider', 'value')]
     )
 
     # Updates graph when the user changes the date or time.
-    def update_graph(start_date, end_date, hour_range):
-        start_date = pd.to_datetime(start_date)
-        print(start_date)
-        print(data)
-        print(data['Time'].min())
-        print(data['Time'].min().date())
-        end_date = pd.to_datetime(end_date)
+    def update_figure(start_date, end_date, hour_range):
+    # Filter data based on selected date range and hour range
+        filtered_data = data[(data['Time'].dt.date >= pd.to_datetime(start_date).date()) &
+                            (data['Time'].dt.date <= pd.to_datetime(end_date).date()) &
+                            (data['Time'].dt.hour >= hour_range[0]) &
+                            (data['Time'].dt.hour <= hour_range[1])]
 
-        start_time = start_date.replace(hour=hour_range[0])
-        end_time = end_date.replace(hour=hour_range[1])
+        traces = []
+        for column in filtered_data.columns:
+            if column not in ['Id', 'Time']:
+                traces.append(
+                    go.Scatter(
+                        x=filtered_data['Time'],
+                        y=filtered_data[column],
+                        mode='lines',
+                        name=column
+                    )
+                )
 
-        filtered_data = data[(data['Time'] >= start_time) & (data['Time'] <= end_time)]
-        fig = px.line(filtered_data, x='Time', y=components_name)
-
-        selected_columns = [components_name[i] for i in checked]
-        fig = px.line(filtered_data, x='Time', y=selected_columns)
-
-        return fig
+        return {'data': traces,
+                'layout': go.Layout(title='Data Visualization',
+                                    xaxis={'title': 'Time'},
+                                    yaxis={'title': 'Values'},
+                                    hovermode='closest')}
     
 
     # Starts the webserver with waitress
