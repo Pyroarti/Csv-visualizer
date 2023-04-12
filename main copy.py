@@ -25,14 +25,11 @@ HELP_TEXT_FILE = r"UI_componentes\help_text.txt"
 HELP_VIDEO_FILE = r"UI_componentes\Tutorial.mp4"
 BACKGROUND_IMAGE = r"UI_componentes\backround.jpg"
 
-components_checked = []
 
 
-def browse_files(app_instance):
+def browse_files(app_instance, filenames):
     """It promts the user to select a csv file
     and adds the csv files to a list for handling and plotting multiple csv data."""
-
-    filenames = []
 
     if hasattr(app_instance, "dash_app"):
         app_instance.dash_app.server.stop()
@@ -48,7 +45,7 @@ def browse_files(app_instance):
 
     if filename.endswith("csv"):
         filenames.append(filename)
-        after_file_selected(app_instance, filenames)
+        after_file_selected(app_instance, filename)
 
     else:
         messagebox.showinfo("Invalid file type", "Please select a CSV file.")
@@ -56,7 +53,7 @@ def browse_files(app_instance):
     return filenames
 
 
-def after_file_selected(app_instance, filenames):
+def after_file_selected(app_instance, filename, filenames):
     """Takes the csv data and makes them into dataframes
     and adds the componentes to a list for the user to select what to plot."""
     global data
@@ -82,7 +79,7 @@ def after_file_selected(app_instance, filenames):
     # Makes checkboxes in the UI for each component in the csv file.
     app_instance.create_dynamic_checkboxes(components_name)
 
-    return data, components_name
+    return data, components_name, filenames
 
 
 def create_dash_app(components_name, data, checked):
@@ -160,14 +157,14 @@ def create_dash_app(components_name, data, checked):
     webbrowser.open_new('http://127.0.0.1:8050/')
 
 
-def show_graph():
+def show_graph(app_instance, components_checked):
     """Functions that is called when pressing the show graph button."""
     if components_checked:
         create_dash_app(components_name, data, components_checked)
         print("The data looks like this",data)
         print("checkbox pressed index is",components_checked)
         print("the csv data contains", components_name)
-        #filenames.clear()
+        
     else:
         messagebox.showinfo("No component selected", "Please select atleast one component to plot.")
 
@@ -205,6 +202,8 @@ class App(customtkinter.CTk):
         self.checkbox_vars = []
         self.toplevel_window = None
         self.scrollable_frame = None
+        self.components_checked = []
+        self.filenames = []
 
         self.geometry("400x500")
         self.title("LMT csv visualizer")
@@ -230,14 +229,13 @@ class App(customtkinter.CTk):
         main_label.pack(pady=10, padx=10)
 
         button_explore = customtkinter.CTkButton(master=self.frame_1,
-                                                 command=lambda: browse_files(self),
-                                                 text="Browse files")
+                                             command=self.browse_file_callback,
+                                             text="Browse files")
         button_explore.pack(pady=10, padx=10)
 
         button_show_graph = customtkinter.CTkButton(master=self.frame_1,
-                                                    command=show_graph, text="Show graph")
+                                                command=self.show_graph_callback, text="Show graph")
         button_show_graph.pack(pady=10, padx=10)
-
         button_help = customtkinter.CTkButton(master=self.frame_1,
                                               command=self.open_toplevel, text="How to use")
         button_help.pack(pady=10, padx=10)
@@ -254,7 +252,7 @@ class App(customtkinter.CTk):
             for child in self.scrollable_frame.winfo_children():
                 child.destroy()
                 self.checkbox_vars.clear()
-                components_checked.clear()
+                #components_checked.clear()
 
 
     def create_dynamic_checkboxes(self, components_name):
@@ -286,9 +284,18 @@ class App(customtkinter.CTk):
     def on_checkbox_change(self, index):
         """Makes a list for every checkbox that is crossed."""
         if self.checkbox_vars[index].get() == 1:
-            components_checked.append(index)
+            self.components_checked.append(index)
         else:
-            components_checked.remove(index)
+            self.components_checked.remove(index)
+
+
+    def browse_file_callback(self):
+        self.filenames = browse_files(self, self.filenames)
+        data, components_name, self.filenames = after_file_selected(self, self.filenames[-1], self.filenames)
+        self.create_dynamic_checkboxes(components_name)
+
+    def show_graph_callback(self):
+        show_graph(self, self.components_checked)
 
 
     def open_toplevel(self):
