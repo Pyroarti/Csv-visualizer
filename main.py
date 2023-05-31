@@ -1,4 +1,5 @@
-"""Main program to visualize csv data, can be tested on the example data in the folder "data" """
+"""Main program to visualize csv data, can be tested on the example data in the folder "data" 
+Made by Roberts Balulis"""
 
 import time
 from tkinter import IntVar, filedialog, messagebox
@@ -17,6 +18,10 @@ import plotly.express as px
 from PIL import Image
 from waitress import serve
 
+from create_log import setup_logger
+
+logger = setup_logger('main')
+
 # Sets the theme for the UI.
 customtkinter.set_appearance_mode("dark")
 customtkinter.set_default_color_theme("blue")
@@ -32,26 +37,23 @@ def browse_files(app_instance):
     """It promts the user to select a csv file
     and adds the csv files to a list for handling and plotting multiple csv data."""
 
-    filenames = []
-
     if hasattr(app_instance, "dash_app"):
         app_instance.dash_app.server.stop()
         time.sleep(1)
 
-    
     initial_dir = os.getcwd()
 
-    filename = filedialog.askopenfilename(
+    filenames = filedialog.askopenfilenames(
         initialdir=initial_dir,
         title="Select a File",
         filetypes=(("csv files", "*.csv*"), ("all files", "*.*")))
 
-    if filename.endswith("csv"):
-        filenames.append(filename)
-        after_file_selected(app_instance, filenames)
+    for names in filenames:
+        if not names.endswith("csv"):
+            messagebox.showinfo("Invalid file type", f"{names} is not a CSV file.")
+            return
 
-    else:
-        messagebox.showinfo("Invalid file type", "Please select a CSV file.")
+    after_file_selected(app_instance, filenames)
 
     return filenames
 
@@ -62,7 +64,6 @@ def after_file_selected(app_instance, filenames):
     global data
     global components_name
     dfs = []
-
 
     for filename in filenames:  # Makes possible to select multiple csv files
         dataframe = pd.read_csv(filename)
@@ -77,7 +78,7 @@ def after_file_selected(app_instance, filenames):
 
     components_name = pd.read_csv(filename, index_col=0, nrows=0).columns.tolist()
     components_name = components_name[1:]
-    print("comp name in afterfile selected is",components_name)
+    logger.info(f"component name in afterfile selected is {components_name}")
 
     # Makes checkboxes in the UI for each component in the csv file.
     app_instance.create_dynamic_checkboxes(components_name)
@@ -86,8 +87,8 @@ def after_file_selected(app_instance, filenames):
 
 
 def create_dash_app(components_name, data, checked):
-    print("after func dash_app com names are", components_name)
     """Makes the dash webserver and adds a calaneder and hour slider."""
+    logger.info(f"after func dash_app comp names are {components_name}")
 
     app = dash.Dash(__name__)
     # Calender so the user can select what date to see the plottet data
@@ -136,38 +137,44 @@ def create_dash_app(components_name, data, checked):
 
     def update_graph(start_date, end_date, hour_range):
         """Updates graph when the user changes the date or time."""
-        start_date = pd.to_datetime(start_date)
-        end_date = pd.to_datetime(end_date)
+        try:
+            start_date = pd.to_datetime(start_date)
+            end_date = pd.to_datetime(end_date)
 
-        start_time = start_date.replace(hour=hour_range[0])
-        end_time = end_date.replace(hour=hour_range[1])
+            start_time = start_date.replace(hour=hour_range[0])
+            end_time = end_date.replace(hour=hour_range[1])
 
-        filtered_data = data[(data['Time'] >= start_time) & (data['Time'] <= end_time)]
-        
-        print("componentes name are ", components_name)
+            filtered_data = data[(data['Time'] >= start_time) & (data['Time'] <= end_time)]
 
-        selected_columns = [components_name[i] for i in checked]
-        print("plotted data is ", selected_columns)
-        fig = px.line(filtered_data, x='Time', y=selected_columns)
+            logger.info(f"componentes name after updating date is {components_name}")
+
+            selected_columns = [components_name[i] for i in checked]
+            logger.info(f"plotted data after updating date is {selected_columns}")
+            fig = px.line(filtered_data, x='Time', y=selected_columns)
+
+        except Exception as e:
+            logger.error(f"An error occured {e}")
 
         return fig
-
-    # Starts the webserver with waitress.
-    dash_thread = threading.Thread(target=serve, args=(app.server,),
-                                   kwargs={'host': '127.0.0.1', 'port': 8050, '_quiet': True})
-    dash_thread.daemon = True
-    dash_thread.start()
-    webbrowser.open_new('http://127.0.0.1:8050/')
+    try:
+        # Starts the webserver with waitress.
+        logger.info(f"Trying to start the webserver")
+        dash_thread = threading.Thread(target=serve, args=(app.server,),
+                                       kwargs={'host': '127.0.0.1', 'port': 8050, '_quiet': True})
+        dash_thread.daemon = True
+        dash_thread.start()
+        webbrowser.open_new('http://127.0.0.1:8050/')
+    except Exception as e:
+        logger.error(f"An exception has occures: {e}")
 
 
 def show_graph():
     """Functions that is called when pressing the show graph button."""
     if components_checked:
         create_dash_app(components_name, data, components_checked)
-        print("The data looks like this",data)
-        print("checkbox pressed index is",components_checked)
-        print("the csv data contains", components_name)
-        #filenames.clear()
+        logger.info(f"The data looks like this {data}")
+        logger.info(f"checkbox pressed index is {components_checked}")
+        logger.info(f"the csv data contains {components_name}")
     else:
         messagebox.showinfo("No component selected", "Please select atleast one component to plot.")
 
@@ -178,7 +185,7 @@ class ToplevelWindow(customtkinter.CTkToplevel):
         super().__init__(*args, **kwargs)
         self.geometry("700x300")
         self.resizable(False, False)
-        self.title("LMT csv visualizer")
+        self.title("Csv visualizer")
 
         with open(HELP_TEXT_FILE, "r", encoding="utf-8") as text_file:
             help_text = text_file.read()
@@ -190,6 +197,8 @@ class ToplevelWindow(customtkinter.CTkToplevel):
                                                          command=self.play_video,
                                                          text="See video tutorial")
         self.button_show_graph.pack(pady=10, padx=10)
+
+        self.attributes('-topmost', True)
 
 
     def play_video(self):
@@ -206,13 +215,13 @@ class App(customtkinter.CTk):
         self.toplevel_window = None
         self.scrollable_frame = None
 
-        self.geometry("400x500")
-        self.title("LMT csv visualizer")
+        self.geometry("400x700")
+        self.title("Csv visualizer")
 
         self.resizable(False, False)
 
         self.bg_image = customtkinter.CTkImage(Image.open(BACKGROUND_IMAGE),
-                                               size=(400, 780))
+                                               size=(400, 980))
         
         self.bg_image_label = customtkinter.CTkLabel(self, image=self.bg_image)
         self.bg_image_label.place(x=0, y=0, relwidth=1, relheight=1)
@@ -224,7 +233,7 @@ class App(customtkinter.CTk):
         self.frame_1.pack(pady=20, padx=40, fill="both", expand=True)
 
         main_label = customtkinter.CTkLabel(master=self.frame_1, justify=customtkinter.LEFT,
-                                            text="Visualize csv data",
+                                            text="Csv visualizer",
                                             font=customtkinter.CTkFont(size=20, weight="bold"),
                                             bg_color="transparent")
         main_label.pack(pady=10, padx=10)
@@ -243,9 +252,14 @@ class App(customtkinter.CTk):
         button_help.pack(pady=10, padx=10)
 
         button_exit = customtkinter.CTkButton(master=self.frame_1,
-                                              command=quit, text="Exit")
+                                              command=self.quit, text="Exit")
         button_exit.pack(pady=10, padx=10)
 
+        about_text = customtkinter.CTkLabel(master=self.frame_1,
+                                            font=customtkinter.CTkFont(size=16, weight="bold"),
+                                            bg_color="transparent",
+                                            text="Owned and made by Roberts Balulis")
+        about_text.pack(pady=70, padx=10)
 
 
     def remove_checkboxes(self):
@@ -282,7 +296,6 @@ class App(customtkinter.CTk):
             self.checkbox_vars.append(checkbox_var)
            
 
-
     def on_checkbox_change(self, index):
         """Makes a list for every checkbox that is crossed."""
         if self.checkbox_vars[index].get() == 1:
@@ -316,3 +329,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    logger.info("Started the program")
