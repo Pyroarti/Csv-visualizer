@@ -30,16 +30,12 @@ HELP_TEXT_FILE = r"UI_componentes\help_text.txt"
 HELP_VIDEO_FILE = r"UI_componentes\Tutorial.mp4"
 BACKGROUND_IMAGE = r"UI_componentes\backround.jpg"
 
-components_checked = []
 
 
 def browse_files(app_instance):
     """It promts the user to select a csv file
     and adds the csv files to a list for handling and plotting multiple csv data."""
-
-    if hasattr(app_instance, "dash_app"):
-        app_instance.dash_app.server.stop()
-        time.sleep(1)
+  
 
     initial_dir = os.getcwd()
 
@@ -61,33 +57,32 @@ def browse_files(app_instance):
 def after_file_selected(app_instance, filenames):
     """Takes the csv data and makes them into dataframes
     and adds the componentes to a list for the user to select what to plot."""
-    global data
-    global components_name
+
     dfs = []
 
     for filename in filenames:  # Makes possible to select multiple csv files
         dataframe = pd.read_csv(filename)
         dfs.append(dataframe)
-    data = pd.concat(dfs, axis=0, ignore_index=True)
+    app_instance.data = pd.concat(dfs, axis=0, ignore_index=True)
 
-    data = data.dropna()
+    app_instance.data = app_instance.data.dropna()
 
-    data['Time'] = pd.to_datetime(data['Time'])
+    app_instance.data['Time'] = pd.to_datetime(app_instance.data['Time'])
 
-    components_name = []
+    app_instance.components_name = []
 
-    components_name = pd.read_csv(filename, index_col=0, nrows=0).columns.tolist()
-    components_name = components_name[1:]
-    logger.info(f"component name in afterfile selected is {components_name}")
+    app_instance.components_name = pd.read_csv(filename, index_col=0, nrows=0).columns.tolist()
+    app_instance.components_name = app_instance.components_name[1:]
+    logger.info(f"component name in afterfile selected is {app_instance.components_name}")
 
-    # Makes checkboxes in the UI for each component in the csv file.
-    app_instance.create_dynamic_checkboxes(components_name)
+    app_instance.create_dynamic_checkboxes(app_instance.components_name)
 
-    return data, components_name
+    return app_instance.data, app_instance.components_name
 
 
 def create_dash_app(components_name, data, checked):
     """Makes the dash webserver and adds a calaneder and hour slider."""
+
     logger.info(f"after func dash_app comp names are {components_name}")
 
     app = dash.Dash(__name__)
@@ -162,19 +157,20 @@ def create_dash_app(components_name, data, checked):
         dash_thread = threading.Thread(target=serve, args=(app.server,),
                                        kwargs={'host': '127.0.0.1', 'port': 8050, '_quiet': True})
         dash_thread.daemon = True
+        #dash_thread.stop()
         dash_thread.start()
         webbrowser.open_new('http://127.0.0.1:8050/')
     except Exception as e:
         logger.error(f"An exception has occures: {e}")
 
 
-def show_graph():
+def show_graph(app_instance):
     """Functions that is called when pressing the show graph button."""
-    if components_checked:
-        create_dash_app(components_name, data, components_checked)
-        logger.info(f"The data looks like this {data}")
-        logger.info(f"checkbox pressed index is {components_checked}")
-        logger.info(f"the csv data contains {components_name}")
+    if app_instance.components_checked:
+        create_dash_app(app_instance.components_name, app_instance.data, app_instance.components_checked)
+        logger.info(f"The data looks like this {app_instance.data}")
+        logger.info(f"checkbox pressed index is {app_instance.components_checked}")
+        logger.info(f"the csv data contains {app_instance.components_name}")
     else:
         messagebox.showinfo("No component selected", "Please select atleast one component to plot.")
 
@@ -214,6 +210,9 @@ class App(customtkinter.CTk):
         self.checkbox_vars = []
         self.toplevel_window = None
         self.scrollable_frame = None
+        self.data = None
+        self.components_name = []
+        self.components_checked = []
 
         self.geometry("400x700")
         self.title("Csv visualizer")
@@ -244,7 +243,7 @@ class App(customtkinter.CTk):
         button_explore.pack(pady=10, padx=10)
 
         button_show_graph = customtkinter.CTkButton(master=self.frame_1,
-                                                    command=show_graph, text="Show graph")
+                                                    command=lambda: show_graph(self), text="Show graph")
         button_show_graph.pack(pady=10, padx=10)
 
         button_help = customtkinter.CTkButton(master=self.frame_1,
@@ -268,7 +267,7 @@ class App(customtkinter.CTk):
             for child in self.scrollable_frame.winfo_children():
                 child.destroy()
                 self.checkbox_vars.clear()
-                components_checked.clear()
+                self.components_checked.clear()
 
 
     def create_dynamic_checkboxes(self, components_name):
@@ -299,9 +298,9 @@ class App(customtkinter.CTk):
     def on_checkbox_change(self, index):
         """Makes a list for every checkbox that is crossed."""
         if self.checkbox_vars[index].get() == 1:
-            components_checked.append(index)
+            self.components_checked.append(index)
         else:
-            components_checked.remove(index)
+            self.components_checked.remove(index)
 
 
     def open_toplevel(self):
@@ -315,9 +314,6 @@ class App(customtkinter.CTk):
 
     def quit(self):
         """Stops the app/server"""
-        if hasattr(self, "dash_app"):
-            self.dash_app.server.stop()
-            time.sleep(1)
         os.kill(os.getpid(), signal.SIGTERM)
 
 

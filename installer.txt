@@ -1,0 +1,26 @@
+Software End-User License Agreement (EULA) for RB Studio
+
+THIS AGREEMENT IS A LEGAL DOCUMENT. PLEASE READ IT CAREFULLY BEFORE INSTALLING OR USING CSV Visualizer (the "SOFTWARE"). BY DOWNLOADING, INSTALLING, AND/OR USING THE SOFTWARE, YOU ACCEPT THE TERMS OF THIS AGREEMENT. IF YOU DO NOT AGREE TO THESE TERMS, DO NOT INSTALL OR USE THE SOFTWARE.
+
+License Grant: Subject to the terms of this Agreement, RB Studio grants you a limited, non-exclusive, non-transferable license to use the Software.
+
+Restrictions: You shall not modify, copy, duplicate, reproduce, license or sublicense the Software, or transfer or convey the Software or any right in the Software to anyone else without the prior written consent of RB Studio.
+
+Ownership: All right, title, and interest in and to the Software, including without limitation any and all copyrights, patents, and trade secrets pertaining thereto, belong to RB Studio.
+
+No Warranty: The Software is provided to you "as is," and you agree to use it at your own risk. RB Studio makes no guarantees, representations or warranties of any kind, express or implied, arising by law or otherwise, including but not limited to, content, quality, accuracy, completeness, effectiveness, reliability, fitness for a particular purpose, usefulness, use or results to be obtained from the Software.
+
+Limitation of Liability: RB Studio SHALL NOT BE LIABLE TO YOU FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL OR EXEMPLARY DAMAGES THAT MAY BE INCURRED BY YOU, HOWEVER CAUSED AND UNDER ANY THEORY OF LIABILITY.
+
+Termination: This Agreement is effective until terminated by you or by RB Studio. Your rights under this Agreement will terminate automatically if you fail to comply with any of its terms.
+
+Governing Law: This Agreement shall be governed by and construed in accordance with the laws of Sweden, without regard to its conflict of laws rules.
+
+Entire Agreement: This Agreement constitutes the entire agreement between you and RB Studio with respect to the Software and supersedes all prior or contemporaneous understandings regarding such subject matter.
+
+If you have any questions about this Agreement, or if you want to contact RB Studio for any reason, please direct all correspondence to robert.balulis@hotmail.com.
+
+ACCEPT/DECLINE
+
+By clicking the "Next" button, you acknowledge that you have read, understood, and agree to be bound by the terms of this Agreement.
+
