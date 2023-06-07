@@ -2,37 +2,57 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
+from tkinter import filedialog
+from tkinter import Tk
 
-df = pd.read_csv('Flow_log.csv')
+from create_log import setup_logger
 
-df['Time'] = pd.to_datetime(df['Time'])
+logger = setup_logger('Report')
 
-stats = df.describe()
+def generate_rapport(filenames):
+    root = Tk()
+    root.withdraw()
 
-max_days = df.idxmax()
+    dataframes = []
+    for filename in filenames:
+        df = pd.read_csv(filename)
+        dataframes.append(df)
 
-pdf_pages = PdfPages('output.pdf')
+    df['Time'] = pd.to_datetime(df['Time'])
 
-for column in df.columns:
-    if column == 'Time' or column == 'Id':
-        continue  # Skip non numerical columns
+    stats = df.describe()
 
-    fig = plt.figure(figsize=(8.27, 11.69), dpi=100)
-    plt.plot(df['Time'], df[column], label=column)
-    plt.title(f'{column} over time')
-    plt.xlabel('Time')
-    plt.ylabel('Value')
-    plt.legend()
-    plt.grid(True)
-    plt.xticks([])
-    plt.yticks([])
+    max_days = df.idxmax()
+    try:
+        file_path = filedialog.asksaveasfilename(defaultextension='.pdf')
+    except Exception as e:
+        logger.error(e)
 
-    plt.figtext(0.5, 0.01, f'Median: {stats[column]["50%"]}\n'
-                           f'Min: {stats[column]["min"]}\n'
-                           f'Max: {stats[column]["max"]}\n'
-                           f'Day of max value: {max_days[column]}', 
-                horizontalalignment='center')
+    pdf_pages = PdfPages(file_path)
 
-    pdf_pages.savefig(fig)
+    for column in df.columns:
+        if column == 'Time' or column == 'Id':
+            continue  # Skip non numerical columns
 
-pdf_pages.close()
+        fig = plt.figure(figsize=(8.27, 11.69), dpi=100)
+        plt.plot(df['Time'], df[column], label=column)
+        plt.title(f'{column} over time')
+        plt.xlabel('Time')
+        plt.ylabel('Value')
+        plt.legend()
+        plt.grid(True)
+        plt.xticks([])
+        plt.subplots_adjust(bottom=0.55)
+
+        plt.figtext(0.5, 0.01, f'Median: {stats[column]["50%"]}\n'
+                               f'Min: {stats[column]["min"]}\n'
+                               f'Max: {stats[column]["max"]}\n'
+                               f'25%: {stats[column]["25%"]}\n'
+                               f'75%: {stats[column]["75%"]}\n', 
+                    horizontalalignment='center', fontsize= 30.0)
+
+        pdf_pages.savefig(fig)
+
+    pdf_pages.close()
+
+    return True

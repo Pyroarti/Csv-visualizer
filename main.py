@@ -19,6 +19,7 @@ from PIL import Image
 from waitress import serve
 
 from create_log import setup_logger
+from report import generate_rapport
 
 logger = setup_logger('main')
 
@@ -35,23 +36,24 @@ BACKGROUND_IMAGE = r"UI_componentes\backround.jpg"
 def browse_files(app_instance):
     """It promts the user to select a csv file
     and adds the csv files to a list for handling and plotting multiple csv data."""
-  
+
 
     initial_dir = os.getcwd()
 
-    filenames = filedialog.askopenfilenames(
+    app_instance.filenames = filedialog.askopenfilenames(
         initialdir=initial_dir,
         title="Select a File",
         filetypes=(("csv files", "*.csv*"), ("all files", "*.*")))
+    print(type(app_instance.filenames))
 
-    for names in filenames:
+    for names in app_instance.filenames:
         if not names.endswith("csv"):
             messagebox.showinfo("Invalid file type", f"{names} is not a CSV file.")
             return
 
-    after_file_selected(app_instance, filenames)
+    after_file_selected(app_instance, app_instance.filenames)
 
-    return filenames
+    return app_instance.filenames
 
 
 def after_file_selected(app_instance, filenames):
@@ -213,6 +215,7 @@ class App(customtkinter.CTk):
         self.data = None
         self.components_name = []
         self.components_checked = []
+        self.filenames = []
 
         self.geometry("400x700")
         self.title("Csv visualizer")
@@ -245,6 +248,12 @@ class App(customtkinter.CTk):
         button_show_graph = customtkinter.CTkButton(master=self.frame_1,
                                                     command=lambda: show_graph(self), text="Show graph")
         button_show_graph.pack(pady=10, padx=10)
+
+        button_generate_report = customtkinter.CTkButton(master=self.frame_1,
+                                                command=self.start_generate_raport, 
+                                                text="Generate a report")
+
+        button_generate_report.pack(pady=10, padx=10)
 
         button_help = customtkinter.CTkButton(master=self.frame_1,
                                               command=self.open_toplevel, text="How to use")
@@ -316,6 +325,17 @@ class App(customtkinter.CTk):
         """Stops the app/server"""
         os.kill(os.getpid(), signal.SIGTERM)
 
+
+    def start_generate_raport(self):
+        if self.filenames:
+            report_done = generate_rapport(self.filenames)
+        else:
+            messagebox.showinfo("Error", "Please select a file before trying to make a report")
+
+        if report_done:
+            messagebox.showinfo("Info", "The report has been saved")
+        else:
+            messagebox.showinfo("Error", "There was a error saving the report")
 
 def main():
     """Main func to start the UI"""
