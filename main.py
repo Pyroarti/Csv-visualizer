@@ -357,6 +357,7 @@ class App(customtkinter.CTk):
     def quit(self):
         """Stops the app/server"""
         os.kill(os.getpid(), signal.SIGTERM)
+        # lägg till att ta bort alla convert filerna
 
 
     def start_generate_raport(self):
