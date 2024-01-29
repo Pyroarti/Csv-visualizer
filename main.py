@@ -20,6 +20,7 @@ from waitress import serve
 
 from create_log import setup_logger
 from report import generate_rapport
+from convert import convert_csv
 
 logger = setup_logger('main')
 
@@ -30,7 +31,6 @@ customtkinter.set_default_color_theme("blue")
 HELP_TEXT_FILE = r"UI_componentes\help_text.txt"
 HELP_VIDEO_FILE = r"UI_componentes\Tutorial.mp4"
 BACKGROUND_IMAGE = r"UI_componentes\backround.jpg"
-
 
 
 def browse_files(app_instance):
@@ -51,31 +51,43 @@ def browse_files(app_instance):
             messagebox.showinfo("Invalid file type", f"{names} is not a CSV file.")
             return
 
-    after_file_selected(app_instance, app_instance.filenames)
+    check_hmi_type(app_instance, app_instance.filenames)
 
     return app_instance.filenames
 
 
+def check_hmi_type(app_instance, filenames):
+    """Checks what HMI the user has selected and converts the csv files to the correct format."""
+
+    if app_instance.selected_hmi == "Beijer":
+        after_file_selected(app_instance, filenames)
+    elif app_instance.selected_hmi == "Siemens":
+        converted_csv_list = []
+        for filename in filenames:
+            converted_csv_list.append(convert_csv(filename))
+        after_file_selected(app_instance, converted_csv_list)
+    else:
+        messagebox.showinfo("Error", "Please select a HMI before trying to make a report")
+        return
+
 def after_file_selected(app_instance, filenames):
     """Takes the csv data and makes them into dataframes
-    and adds the componentes to a list for the user to select what to plot."""
+    and adds the components to a list for the user to select what to plot."""
 
-    dfs = []
+    dfs = [pd.read_csv(filename) for filename in filenames]
 
-    for filename in filenames:  # Makes possible to select multiple csv files
-        dataframe = pd.read_csv(filename)
-        dfs.append(dataframe)
-    app_instance.data = pd.concat(dfs, axis=0, ignore_index=True)
+    combined_df = pd.concat(dfs, ignore_index=True)
 
-    app_instance.data = app_instance.data.dropna()
+    combined_df['Time'] = pd.to_datetime(combined_df['Time'])
 
-    app_instance.data['Time'] = pd.to_datetime(app_instance.data['Time'])
+    app_instance.data = combined_df
+    print(app_instance.data)
 
-    app_instance.components_name = []
-
-    app_instance.components_name = pd.read_csv(filename, index_col=0, nrows=0).columns.tolist()
-    app_instance.components_name = app_instance.components_name[1:]
-    logger.info(f"component name in afterfile selected is {app_instance.components_name}")
+    component_set = set()
+    for df in dfs:
+        component_set.update(df.columns[2:])
+    app_instance.components_name = list(component_set)
+    logger.info(f"Component names are: {app_instance.components_name}")
 
     app_instance.create_dynamic_checkboxes(app_instance.components_name)
 
@@ -86,6 +98,9 @@ def create_dash_app(components_name, data, checked):
     """Makes the dash webserver and adds a calaneder and hour slider."""
 
     logger.info(f"after func dash_app comp names are {components_name}")
+    print(components_name)
+    print(data)
+    print(checked)
 
     app = dash.Dash(__name__)
     # Calender so the user can select what date to see the plottet data
@@ -216,6 +231,7 @@ class App(customtkinter.CTk):
         self.components_name = []
         self.components_checked = []
         self.filenames = []
+        self.selected_hmi = "Beijer"
 
         self.geometry("400x700")
         self.title("Csv visualizer")
@@ -239,6 +255,18 @@ class App(customtkinter.CTk):
                                             font=customtkinter.CTkFont(size=20, weight="bold"),
                                             bg_color="transparent")
         main_label.pack(pady=10, padx=10)
+
+        hmi_drop_list_label = customtkinter.CTkLabel(master=self.frame_1, justify=customtkinter.LEFT,
+                                            text="Choose a HMI manufacturer",
+                                            font=customtkinter.CTkFont(size=16, weight="bold"),
+                                            bg_color="transparent")
+        hmi_drop_list_label.pack(pady=10, padx=10)
+
+        self.hmi_drop_list = customtkinter.CTkComboBox(master=self.frame_1,
+                                           values=["Beijer", "Siemens"],
+                                           command=self.change_hmi,
+                                            bg_color="transparent")
+        self.hmi_drop_list.pack(pady=10)
 
         button_explore = customtkinter.CTkButton(master=self.frame_1,
                                                  command=lambda: browse_files(self),
@@ -267,7 +295,12 @@ class App(customtkinter.CTk):
                                             font=customtkinter.CTkFont(size=16, weight="bold"),
                                             bg_color="transparent",
                                             text="Owned and made by Roberts Balulis")
-        about_text.pack(pady=70, padx=10)
+        about_text.pack(pady=30, padx=10)
+
+    def change_hmi(self, selected_option):
+        """Changes the HMI to the selected one"""
+        self.selected_hmi = selected_option
+        logger.info(f"Selected HMI is {self.selected_hmi}")
 
 
     def remove_checkboxes(self):

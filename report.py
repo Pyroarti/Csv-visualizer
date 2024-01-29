@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from tkinter import filedialog
 from tkinter import Tk
+from pandas.plotting import table
 
 from create_log import setup_logger
 
@@ -44,11 +45,16 @@ def generate_rapport(filenames):
         plt.xticks([])
         plt.subplots_adjust(bottom=0.55)
 
-        plt.figtext(0.5, 0.01, f'Median: {stats[column]["50%"]}\n'
-                               f'Min: {stats[column]["min"]}\n'
-                               f'Max: {stats[column]["max"]}\n'
-                               f'25%: {stats[column]["25%"]}\n'
-                               f'75%: {stats[column]["75%"]}\n', 
+        plt.figtext(0.5, 0.01, f'Median value: {stats[column]["50%"]}\n'
+                             "---------------------------------\n"
+                               f'Lowest value : {stats[column]["min"]}\n'
+                             "---------------------------------\n"
+                               f'Highest value: {stats[column]["max"]}\n'
+                             "---------------------------------\n"
+                               f'25% value: {stats[column]["25%"]}\n'
+                             "---------------------------------\n"
+                               f'75% value: {stats[column]["75%"]}\n',
+
                     horizontalalignment='center', fontsize= 30.0)
 
         pdf_pages.savefig(fig)
