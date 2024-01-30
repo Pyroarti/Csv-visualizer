@@ -132,3 +132,6 @@ dmypy.json
 api_key.txt
 Android_app/app/release/app-release.apk
 Android_app/app/release/output-metadata.json
+
+Output/
+Output/*

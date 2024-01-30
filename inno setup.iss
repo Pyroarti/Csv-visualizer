@@ -16,7 +16,7 @@ AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 DefaultDirName={autopf}\{#MyAppName}
 DisableProgramGroupPage=yes
-InfoBeforeFile=C:\Users\rober\Desktop\Programmering\Python\Github\Csv-visualizer\installer.txt
+InfoBeforeFile=C:\Users\rober\Desktop\Programmering\Github\Csv-visualizer\installer.txt
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
 OutputBaseFilename=mysetup
@@ -32,8 +32,8 @@ Name: "norwegian"; MessagesFile: "compiler:Languages\Norwegian.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "C:\Users\rober\Desktop\Programmering\Python\Github\Csv-visualizer\dist\output_folder\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\rober\Desktop\Programmering\Python\Github\Csv-visualizer\dist\output_folder\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\Users\rober\Desktop\Programmering\Github\Csv-visualizer\dist\output_folder\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\rober\Desktop\Programmering\Github\Csv-visualizer\dist\output_folder\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
