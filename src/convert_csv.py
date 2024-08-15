@@ -1,8 +1,12 @@
+"""
+Converts a CSV file from siemens to the default format "Beijer".
+"""
+
 import pandas as pd
 
-def convert_csv(input_file_path):
-    output_file_path = input_file_path.replace('.csv', '_converted.csv')
-    df = pd.read_csv(input_file_path, sep=';', decimal=',', error_bad_lines=False, warn_bad_lines=True)
+def convert_csv_siemens(input_file_path):
+    output_file_path = input_file_path.replace('.csv', '_temp_converted.csv')
+    df = pd.read_csv(input_file_path, sep=';', decimal=',', on_bad_lines="skip")
 
     unwanted_var_names = ['$RT_DIS$', '$RT_OFF$']
     df = df[~df['VarName'].isin(unwanted_var_names)]

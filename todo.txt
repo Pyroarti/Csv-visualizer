@@ -1,1 +1,0 @@
-fixa att efter man kollat på en graf och sen väljer en ny så visar nästa graf inget
