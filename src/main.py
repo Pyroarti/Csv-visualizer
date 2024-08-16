@@ -3,6 +3,8 @@ from tkinter import IntVar, filedialog, messagebox
 import os
 import webbrowser
 import multiprocessing
+import sys
+import logging
 
 import customtkinter
 import dash
@@ -267,6 +269,11 @@ def after_file_selected(app_instance:APP, filenames):
 
 
 def run_dash_server(data, components_name, checked):
+
+    if sys.stdout is None:
+        sys.stdout = open(os.devnull, 'w')
+    if sys.stderr is None:
+        sys.stderr = open(os.devnull, 'w')
     """Runs the Dash server in a separate process."""
     dash_app = dash.Dash(__name__)
 
@@ -330,6 +337,11 @@ def run_dash_server(data, components_name, checked):
 
         return fig
 
+    log = logging.getLogger('werkzeug')
+    log.setLevel(logging.ERROR)
+
+
+    dash_app.logger.disabled = True
     dash_app.run(host=HOST, port=PORT, debug=False, use_reloader=False)
 
 
@@ -387,6 +399,7 @@ def main():
 
 
 if __name__ == "__main__":
+    multiprocessing.freeze_support()
     logger = setup_logger('main')
     logger.info("Started the program")
     main()
