@@ -26,6 +26,12 @@ HOST = '127.0.0.1'
 PORT = 8050
 URL = f'http://{HOST}:{PORT}'
 
+# So the exe wont crash without a console.
+if sys.stdout is None:
+    sys.stdout = open(os.devnull, 'w')
+if sys.stderr is None:
+    sys.stderr = open(os.devnull, 'w')
+
 
 class APP(customtkinter.CTk):
     """Class for the main gui window."""
@@ -269,11 +275,6 @@ def after_file_selected(app_instance:APP, filenames):
 
 
 def run_dash_server(data, components_name, checked):
-
-    if sys.stdout is None:
-        sys.stdout = open(os.devnull, 'w')
-    if sys.stderr is None:
-        sys.stderr = open(os.devnull, 'w')
     """Runs the Dash server in a separate process."""
     dash_app = dash.Dash(__name__)
 
@@ -399,7 +400,7 @@ def main():
 
 
 if __name__ == "__main__":
-    multiprocessing.freeze_support()
+    multiprocessing.freeze_support() # Needed for the exe to work
     logger = setup_logger('main')
     logger.info("Started the program")
     main()
