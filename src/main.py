@@ -20,6 +20,9 @@ from convert_csv import convert_csv_siemens
 HELP_TEXT_FILE = r"UI_componentes\help_text.txt"
 HELP_VIDEO_FILE = r"UI_componentes\Tutorial.mp4"
 BACKGROUND_IMAGE = r"UI_componentes\background.jpg"
+HOST = '127.0.0.1'
+PORT = 8050
+URL = f'http://{HOST}:{PORT}'
 
 
 class APP(customtkinter.CTk):
@@ -44,6 +47,8 @@ class APP(customtkinter.CTk):
         self.title("Csv visualizer")
 
         self.resizable(False, False)
+
+        self.protocol("WM_DELETE_WINDOW", self.disable_close_button)
 
         self.bg_image = customtkinter.CTkImage(Image.open(BACKGROUND_IMAGE), size=(400, 980))
 
@@ -101,6 +106,11 @@ class APP(customtkinter.CTk):
                                             bg_color="transparent",
                                             text="Made by Roberts Balulis")
         about_text.pack(pady=30, padx=10)
+
+
+    def disable_close_button(self):
+        """Disables the close button on the main window so the user uses the exit button."""
+        pass
 
 
     def change_hmi(self, selected_option):
@@ -184,17 +194,21 @@ class APP(customtkinter.CTk):
         if not self.filenames:
             return messagebox.showinfo("Error", "Please select a file before trying to make a report")
 
-        if self.selected_hmi == "Beijer":
-            report_done = generate_rapport(self.filenames)
+        try:
+            if self.selected_hmi == "Beijer":
+                report_done = generate_rapport(self.filenames)
+            elif self.selected_hmi == "Siemens":
+                converted_files = (convert_csv_siemens(filename) for filename in self.filenames)
+                report_done = generate_rapport(converted_files)
+            else:
+                raise ValueError("Unsupported HMI selected")
+        except Exception as e:
+            logger.error(f"Failed to generate report: {e}")
+            messagebox.showinfo("Error", f"Failed to generate report: {str(e)}")
+            return
 
-        elif self.selected_hmi == "Siemens":
-            converted_file = (convert_csv_siemens(filename) for filename in self.filenames)
-            report_done = generate_rapport(converted_file)
+        messagebox.showinfo("Info", "The report has been saved" if report_done else "There was an error saving the report")
 
-        if report_done:
-            messagebox.showinfo("Info", "The report has been saved")
-        else:
-            messagebox.showinfo("Error", "There was an error saving the report")
 
 
 def browse_files(app_instance:APP):
@@ -316,7 +330,7 @@ def run_dash_server(data, components_name, checked):
 
         return fig
 
-    dash_app.run(host='127.0.0.1', port=8050, debug=False, use_reloader=False)
+    dash_app.run(host=HOST, port=PORT, debug=False, use_reloader=False)
 
 
 def create_dash_app(app_instance:APP, components_name, data, checked):
@@ -324,8 +338,8 @@ def create_dash_app(app_instance:APP, components_name, data, checked):
     server_process = multiprocessing.Process(target=run_dash_server, args=(data, components_name, checked))
     server_process.start()
     app_instance.server_process = server_process
-    time.sleep(2)  # Wait for the server to start
-    webbrowser.open_new('http://127.0.0.1:8050/')
+    time.sleep(5)  # Wait for the server to start before opening the webbrowser
+    webbrowser.open_new(URL)
 
 
 def show_graph(app_instance:APP):
