@@ -4,7 +4,6 @@ import os
 import webbrowser
 import multiprocessing
 import sys
-import logging
 
 import customtkinter
 import dash
@@ -117,7 +116,7 @@ class APP(customtkinter.CTk):
 
 
     def disable_close_button(self):
-        """Disables the close button on the main window so the user uses the exit button."""
+        """Disables the x button on top right so the user uses the exit button."""
         pass
 
 
@@ -338,10 +337,6 @@ def run_dash_server(data, components_name, checked):
 
         return fig
 
-    log = logging.getLogger('werkzeug')
-    log.setLevel(logging.ERROR)
-
-
     dash_app.logger.disabled = True
     dash_app.run(host=HOST, port=PORT, debug=False, use_reloader=False)
 
@@ -400,7 +395,8 @@ def main():
 
 
 if __name__ == "__main__":
-    multiprocessing.freeze_support() # Needed for the exe to work
+    # Needed for the exe to work or else the multiprocessing will start multiple instances of the app.
+    multiprocessing.freeze_support()
     logger = setup_logger('main')
     logger.info("Started the program")
     main()

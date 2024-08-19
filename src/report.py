@@ -59,7 +59,6 @@ def generate_rapport(filenames):
         plt.xticks(rotation=45)
         plt.subplots_adjust(bottom=0.2)
 
-        # Add descriptive statistics as text to the figure
         plt.figtext(0.5, 0.01, f'Median value: {stats[column]["50%"]:.3f}\n'
                        f'Lowest value: {stats[column]["min"]:.3f}\n'
                        f'Highest value: {stats[column]["max"]:.3f}\n'
