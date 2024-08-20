@@ -4,7 +4,8 @@ Converts a CSV file from siemens to the default format "Beijer".
 
 import pandas as pd
 
-def convert_csv_siemens(input_file_path):
+
+def convert_csv_siemens(input_file_path:str) -> str:
     output_file_path = input_file_path.replace('.csv', '_temp_converted.csv')
     df = pd.read_csv(input_file_path, sep=';', decimal=',', on_bad_lines="skip")
 

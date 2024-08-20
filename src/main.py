@@ -142,7 +142,7 @@ class APP(customtkinter.CTk):
                 self.components_checked.clear()
 
 
-    def create_checkboxes(self, components_name):
+    def create_checkboxes(self, components_name:list):
         """Creates checkboxes depending on how many components are in the CSV file."""
         self.remove_checkboxes()
         if self.scrollable_frame is None:
@@ -224,8 +224,7 @@ class APP(customtkinter.CTk):
         messagebox.showinfo("Info", "The report has been saved" if report_done else "There was an error saving the report")
 
 
-
-def browse_files(app_instance:APP):
+def browse_files(app_instance:APP) -> list:
     """Prompts the user to select a CSV file and handles the selection."""
     app_instance.stop_server()
     initial_dir = os.getcwd()
@@ -249,7 +248,7 @@ def browse_files(app_instance:APP):
     return app_instance.filenames
 
 
-def check_hmi_type(app_instance:APP, filenames):
+def check_hmi_type(app_instance:APP, filenames:list):
     """Checks what HMI the user has selected and converts the CSV files to the correct format."""
     if app_instance.selected_hmi == "Beijer":
         after_file_selected(app_instance, filenames)
@@ -262,7 +261,8 @@ def check_hmi_type(app_instance:APP, filenames):
         messagebox.showinfo("Error", "Please select an HMI before trying to make a report")
         return
 
-def after_file_selected(app_instance:APP, filenames):
+
+def after_file_selected(app_instance:APP, filenames:list):
     """Takes the CSV data, makes them into DataFrames, and adds components to a list for plotting."""
     dataframes = [pd.read_csv(filename) for filename in filenames]
     combined_df = pd.concat(dataframes, ignore_index=True)
@@ -359,6 +359,8 @@ def create_dash_app(app_instance:APP, components_name, data, checked):
 
 def show_graph(app_instance:APP):
     """Function that is called when pressing the show graph button."""
+    if not app_instance.filenames:
+        return messagebox.showinfo("No file selected", "Please select a file before trying to show a graph")
     if app_instance.components_checked:
         create_dash_app(app_instance, app_instance.components_name,
                         app_instance.data, app_instance.components_checked)
@@ -366,21 +368,22 @@ def show_graph(app_instance:APP):
         logger.info(f"Checkbox pressed index is {app_instance.components_checked}")
         logger.info(f"The CSV data contains {app_instance.components_name}")
     else:
-        messagebox.showinfo("No component selected", "Please select at least one component to plot.")
+        return messagebox.showinfo("No component selected", "Please select at least one component to plot.")
 
 
 class ToplevelWindow(customtkinter.CTkToplevel):
     """Class for the how-to-use window with the video tutorial."""
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.geometry("750x300")
+        self.geometry("800x350")
         self.resizable(False, False)
         self.title("Csv visualizer")
+        self.attributes('-topmost', 1)
 
         with open(HELP_TEXT_FILE, "r", encoding="utf-8") as text_file:
             help_text = text_file.read()
 
-        self.label = customtkinter.CTkLabel(self, text=help_text, justify="left")
+        self.label = customtkinter.CTkLabel(self, text=help_text, justify="left", font=customtkinter.CTkFont(size=16))
         self.label.pack(padx=20, pady=20)
 
         self.button_show_graph = customtkinter.CTkButton(master=self,

@@ -9,7 +9,7 @@ from create_logger import setup_logger
 
 logger = setup_logger("Report")
 
-def generate_rapport(filenames):
+def generate_rapport(filenames:list) -> bool:
     root = Tk()
     root.withdraw()  # Hide Tkinter root window
 
@@ -33,7 +33,9 @@ def generate_rapport(filenames):
     stats = df.describe()
 
     try:
-        file_path = filedialog.asksaveasfilename(defaultextension='.pdf')
+        file_path = filedialog.asksaveasfilename(defaultextension='.pdf',
+                                                 filetypes=[('PDF files', '*.pdf')],
+                                                 title='Save report as PDF')
         if not file_path:
             logger.warning("PDF save was cancelled by the user.")
             root.destroy()

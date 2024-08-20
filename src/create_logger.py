@@ -13,7 +13,7 @@ import logging.handlers
 import os
 import sys
 
-def setup_logger(logger_name):
+def setup_logger(logger_name:str) -> logging.Logger:
 
     """
     Creates and configures a logging instance for the specified module.
