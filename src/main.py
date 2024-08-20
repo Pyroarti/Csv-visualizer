@@ -40,6 +40,20 @@ class APP(customtkinter.CTk):
         customtkinter.set_appearance_mode("dark")
         customtkinter.set_default_color_theme("blue")
 
+        self.geometry("400x750")
+        self.attributes('-topmost', 1)
+        self.title("Csv visualizer")
+
+        self.update_idletasks()
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
+        x_coordinate = (screen_width / 2) - (self.winfo_width() / 2)
+        y_coordinate = (screen_height / 2) - (self.winfo_height() / 2)
+        self.geometry(f"+{int(x_coordinate)}+{int(y_coordinate)}")
+        self.resizable(False, False)
+
+        self.protocol("WM_DELETE_WINDOW", self.disable_close_button)
+
         self.checkbox_vars = []
         self.toplevel_window = None
         self.scrollable_frame = None
@@ -50,65 +64,58 @@ class APP(customtkinter.CTk):
         self.selected_hmi = "Beijer"
         self.server_process = None
 
-        self.geometry("400x750")
-        self.title("Csv visualizer")
-
-        self.resizable(False, False)
-
-        self.protocol("WM_DELETE_WINDOW", self.disable_close_button)
-
         self.bg_image = customtkinter.CTkImage(Image.open(BACKGROUND_IMAGE), size=(400, 980))
 
         self.bg_image_label = customtkinter.CTkLabel(self, image=self.bg_image)
         self.bg_image_label.place(x=0, y=0, relwidth=1, relheight=1)
 
-        self.frame_1 = customtkinter.CTkFrame(master=self, bg_color="transparent")
-        self.frame_1.place(relx=0.5, rely=0.5, anchor="center")
+        self.frame = customtkinter.CTkFrame(master=self, bg_color="transparent")
+        self.frame.place(relx=0.5, rely=0.5, anchor="center")
 
-        self.frame_1 = customtkinter.CTkFrame(master=self)
-        self.frame_1.pack(pady=20, padx=40, fill="both", expand=True)
+        self.frame = customtkinter.CTkFrame(master=self)
+        self.frame.pack(pady=20, padx=40, fill="both", expand=True)
 
-        main_label = customtkinter.CTkLabel(master=self.frame_1, justify=customtkinter.LEFT,
+        main_label = customtkinter.CTkLabel(master=self.frame, justify=customtkinter.LEFT,
                                             text="Csv visualizer",
                                             font=customtkinter.CTkFont(size=20, weight="bold"),
                                             bg_color="transparent")
         main_label.pack(pady=10, padx=10)
 
-        hmi_drop_list_label = customtkinter.CTkLabel(master=self.frame_1, justify=customtkinter.LEFT,
+        hmi_drop_list_label = customtkinter.CTkLabel(master=self.frame, justify=customtkinter.LEFT,
                                                      text="Choose a HMI manufacturer",
                                                      font=customtkinter.CTkFont(size=16, weight="bold"),
                                                      bg_color="transparent")
         hmi_drop_list_label.pack(pady=10, padx=10)
 
-        self.hmi_drop_list = customtkinter.CTkComboBox(master=self.frame_1,
+        self.hmi_drop_list = customtkinter.CTkComboBox(master=self.frame,
                                                        values=["Beijer", "Siemens"],
                                                        command=self.change_hmi,
                                                        bg_color="transparent")
         self.hmi_drop_list.pack(pady=10)
 
-        button_explore = customtkinter.CTkButton(master=self.frame_1,
+        button_explore = customtkinter.CTkButton(master=self.frame,
                                                  command=lambda: browse_files(self),
                                                  text="Browse files")
         button_explore.pack(pady=10, padx=10)
 
-        button_show_graph = customtkinter.CTkButton(master=self.frame_1,
+        button_show_graph = customtkinter.CTkButton(master=self.frame,
                                                     command=lambda: show_graph(self), text="Show graph")
         button_show_graph.pack(pady=10, padx=10)
 
-        button_generate_report = customtkinter.CTkButton(master=self.frame_1,
+        button_generate_report = customtkinter.CTkButton(master=self.frame,
                                                          command=self.start_generate_raport,
                                                          text="Generate a report")
         button_generate_report.pack(pady=10, padx=10)
 
-        button_help = customtkinter.CTkButton(master=self.frame_1,
+        button_help = customtkinter.CTkButton(master=self.frame,
                                               command=self.open_toplevel, text="How to use")
         button_help.pack(pady=10, padx=10)
 
-        button_exit = customtkinter.CTkButton(master=self.frame_1,
+        button_exit = customtkinter.CTkButton(master=self.frame,
                                               command=self.quit, text="Exit")
         button_exit.pack(pady=10, padx=10)
 
-        about_text = customtkinter.CTkLabel(master=self.frame_1,
+        about_text = customtkinter.CTkLabel(master=self.frame,
                                             font=customtkinter.CTkFont(size=16, weight="bold"),
                                             bg_color="transparent",
                                             text="Made by Roberts Balulis")
@@ -139,7 +146,7 @@ class APP(customtkinter.CTk):
         """Creates checkboxes depending on how many components are in the CSV file."""
         self.remove_checkboxes()
         if self.scrollable_frame is None:
-            self.scrollable_frame = customtkinter.CTkScrollableFrame(master=self.frame_1, height=200)
+            self.scrollable_frame = customtkinter.CTkScrollableFrame(master=self.frame, height=200)
             self.scrollable_frame.pack(fill="both", expand=True)
 
         scroll_window_label = customtkinter.CTkLabel(master=self.scrollable_frame,
