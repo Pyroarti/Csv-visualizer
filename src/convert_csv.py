@@ -1,5 +1,5 @@
 """
-Converts a CSV file from siemens to the default format "Beijer".
+Converts a CSV file to the default format "Beijer".
 """
 
 import pandas as pd

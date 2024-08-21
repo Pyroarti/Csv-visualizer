@@ -1,7 +1,8 @@
 """
 This file contains function to easy create programming loggers and alarm loggers.
 
-Version: 0.9.0 First Stable Beta Release
+Version: 0.9.0 First stable beta release
+Version: 0.9.1 Added type hints.
 """
 
 __version__ = "0.9.0"

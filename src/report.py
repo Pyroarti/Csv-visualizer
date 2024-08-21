@@ -1,3 +1,8 @@
+"""
+Makes a report from the data in the CSV files. And shows some statistics about the data.
+Then saves the report as a PDF file.
+"""
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
